@@ -1,0 +1,137 @@
+import { useState } from 'react'
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+
+const questions = [
+  {
+    id: 'size',
+    question: "Jakiej wielkości jest Twoja firma?",
+    options: [
+      { value: 'jdg', label: 'JDG' },
+      { value: 'micro', label: 'Mikroprzedsiębiorstwo' },
+      { value: 'sme', label: 'Średnia firma' },
+      { value: 'large', label: 'Duża firma' },
+    ],
+  },
+  {
+    id: 'sector',
+    question: "W jakim obszarze działa Twoja firma?",
+    options: [
+      { value: 'production', label: 'Produkcyjna' },
+      { value: 'services', label: 'Usługowa' },
+      { value: 'logistics', label: 'Logistyczna' },
+    ],
+    condition: (answers) => answers.size !== 'jdg',
+  },
+];
+
+const recommendations = {
+  jdg: {
+    any: {
+      "Fakturowanie i płatności": "Comarch ERP XT – Faktury, Kasa/Bank",
+      "Rozliczenia i księgowość": "Comarch ERP XT – Księga Podatkowa",
+      "CRM": "Comarch ERP XT – CRM",
+      "Sprzedaż online": "Comarch e-Sklep",
+      "Archiwizacja dokumentów": "Comarch e-Archiwum",
+    }
+  },
+  micro: {
+    production: {
+      "Produkcja": "Comarch ERP Optima – Produkcja",
+      "Magazyn": "Comarch ERP Optima – Handel",
+      "Marże": "Comarch BI Start",
+    },
+    services: {
+      "Zlecenia i CRM": "Comarch ERP Optima – CRM",
+      "Fakturowanie": "Comarch ERP Optima – Faktury",
+      "Analiza usług": "Comarch BI Start",
+    },
+    logistics: {
+      "Magazyn": "Comarch ERP Optima – Handel",
+      "Integracja z kurierami": "Comarch Shipping",
+      "CRM": "Comarch ERP Optima – CRM",
+    }
+  },
+  sme: {
+    production: {
+      "APS": "Comarch APS",
+      "MES": "Comarch MES",
+      "Magazyn": "Comarch WMS",
+      "BI": "Comarch BI",
+      "Obieg dokumentów": "Comarch DMS",
+    },
+    services: {
+      "Projekty": "Comarch ERP XL – Projekty",
+      "CRM": "Comarch ERP XL – CRM",
+      "Analizy": "Comarch BI",
+    },
+    logistics: {
+      "WMS": "Comarch WMS",
+      "Kurierzy": "Comarch Shipping",
+      "BI": "Comarch BI",
+    }
+  },
+  large: {
+    production: {
+      "APS": "Comarch APS",
+      "MES": "Comarch MES",
+      "Enterprise": "Comarch ERP Enterprise",
+      "BI": "Comarch BI",
+    },
+    services: {
+      "Projekty": "Comarch ERP Enterprise – Projekty",
+      "CRM": "Comarch ERP Enterprise – CRM",
+      "BI": "Comarch BI",
+    },
+    logistics: {
+      "WMS": "Comarch WMS",
+      "Kurierzy": "Comarch Shipping",
+      "BI": "Comarch BI",
+    }
+  }
+};
+
+export default function DigitalMaturityTool() {
+  const [answers, setAnswers] = useState({});
+
+  const handleAnswer = (id, value) => {
+    setAnswers({ ...answers, [id]: value });
+  };
+
+  const renderRecommendations = () => {
+    const size = answers.size;
+    const sector = answers.sector || 'any';
+    const recs = recommendations[size]?.[sector];
+    if (!recs) return null;
+    return (
+      <div className="mt-4 space-y-2">
+        {Object.entries(recs).map(([area, tool]) => (
+          <Card key={area}>
+            <CardContent className="p-4">
+              <p className="font-semibold">{area}</p>
+              <p>{tool}</p>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    );
+  };
+
+  return (
+    <div className="space-y-6 max-w-xl mx-auto">
+      {questions.map(q => q.condition && !q.condition(answers) ? null : (
+        <div key={q.id}>
+          <p className="font-semibold mb-2">{q.question}</p>
+          <RadioGroup defaultValue={answers[q.id]} onValueChange={(val) => handleAnswer(q.id, val)}>
+            {q.options.map(opt => (
+              <RadioGroupItem key={opt.value} value={opt.value} label={opt.label} />
+            ))}
+          </RadioGroup>
+        </div>
+      ))}
+
+      {answers.size && (answers.size === 'jdg' || answers.sector) && renderRecommendations()}
+    </div>
+  );
+}

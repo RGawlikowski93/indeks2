@@ -9,12 +9,14 @@
     .question { margin-bottom: 1.5rem; }
     .recommendation { border: 1px solid #ccc; padding: 1rem; margin-top: 1rem; border-radius: 8px; }
     h1 { font-size: 1.5rem; }
+    .hidden { display: none; }
+    button { margin-top: 1rem; }
   </style>
 </head>
 <body>
   <h1>Indeks Dojrzałości Cyfrowej</h1>
 
-  <div class="question">
+  <div class="question" id="step1">
     <label><strong>Jakiej wielkości jest Twoja firma?</strong></label><br />
     <select id="size">
       <option value="">-- wybierz --</option>
@@ -23,9 +25,10 @@
       <option value="sme">Średnia firma</option>
       <option value="large">Duża firma</option>
     </select>
+    <button id="toStep2" disabled>Dalej</button>
   </div>
 
-  <div class="question" id="sector-question" style="display:none;">
+  <div class="question hidden" id="step2">
     <label><strong>W jakim obszarze działa Twoja firma?</strong></label><br />
     <select id="sector">
       <option value="">-- wybierz --</option>
@@ -33,6 +36,7 @@
       <option value="services">Usługowa</option>
       <option value="logistics">Logistyczna</option>
     </select>
+    <button id="showRecommendations" disabled>Pokaż rekomendacje</button>
   </div>
 
   <div id="results"></div>
@@ -106,27 +110,35 @@
 
     const sizeSelect = document.getElementById('size');
     const sectorSelect = document.getElementById('sector');
-    const sectorQuestion = document.getElementById('sector-question');
+    const step1 = document.getElementById('step1');
+    const step2 = document.getElementById('step2');
+    const toStep2Btn = document.getElementById('toStep2');
+    const showBtn = document.getElementById('showRecommendations');
     const resultsDiv = document.getElementById('results');
 
     sizeSelect.addEventListener('change', () => {
-      resultsDiv.innerHTML = '';
+      toStep2Btn.disabled = !sizeSelect.value;
+    });
+
+    toStep2Btn.addEventListener('click', () => {
+      step1.classList.add('hidden');
       if (sizeSelect.value === 'jdg') {
-        sectorQuestion.style.display = 'none';
         showRecommendations('jdg', 'any');
       } else {
-        sectorQuestion.style.display = 'block';
+        step2.classList.remove('hidden');
       }
     });
 
     sectorSelect.addEventListener('change', () => {
-      resultsDiv.innerHTML = '';
-      if (sizeSelect.value && sectorSelect.value) {
-        showRecommendations(sizeSelect.value, sectorSelect.value);
-      }
+      showBtn.disabled = !sectorSelect.value;
+    });
+
+    showBtn.addEventListener('click', () => {
+      showRecommendations(sizeSelect.value, sectorSelect.value);
     });
 
     function showRecommendations(size, sector) {
+      resultsDiv.innerHTML = '';
       const recs = recommendations[size]?.[sector];
       if (!recs) return;
       for (const [area, tool] of Object.entries(recs)) {
@@ -139,3 +151,4 @@
   </script>
 </body>
 </html>
+

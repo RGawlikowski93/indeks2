@@ -11,6 +11,7 @@
     h1 { font-size: 1.5rem; }
     .hidden { display: none; }
     button { margin-top: 1rem; }
+    label { display: block; margin: 0.5rem 0; }
   </style>
 </head>
 <body>
@@ -36,85 +37,55 @@
       <option value="services">Usługowa</option>
       <option value="logistics">Logistyczna</option>
     </select>
-    <button id="showRecommendations" disabled>Pokaż rekomendacje</button>
+    <button id="toStep3" disabled>Dalej</button>
+  </div>
+
+  <div class="question hidden" id="step3">
+    <label><strong>Oceń potrzeby Twojej firmy (średnia firma – usługowa):</strong></label>
+    <div id="dynamicQuestions"></div>
+    <button id="showRecommendations">Pokaż rekomendacje</button>
   </div>
 
   <div id="results"></div>
 
   <script>
+    const questions = [
+      "Czy jesteś zadowolony z obiegu dokumentów w Twojej firmie?",
+      "Czy Twoja firma korzysta z jednolitego systemu do zarządzania projektami i zleceniami?",
+      "Czy masz dostęp do aktualnych danych o rentowności projektów i usług?",
+      "Czy informacje o klientach, umowach i historii kontaktu są łatwo dostępne dla zespołu?",
+      "Czy Twoi pracownicy ewidencjonują czas pracy w sposób uporządkowany i cyfrowy?",
+      "Czy procesy zatwierdzania wniosków (np. urlopowych, zakupowych) są zautomatyzowane?",
+      "Czy Twoja firma wystawia faktury ręcznie czy zintegrowanie z systemem ERP?",
+      "Czy masz kontrolę nad kosztami operacyjnymi i budżetami poszczególnych działów?",
+      "Czy Twoja firma współpracuje z wieloma spółkami lub oddziałami i potrzebuje wspólnego systemu ERP?",
+      "Czy obecny system informatyczny umożliwia Ci generowanie raportów na potrzeby zarządu bez pomocy IT?"
+    ];
+
     const recommendations = {
-      jdg: {
-        any: {
-          "Fakturowanie i płatności": "Comarch ERP XT – Faktury, Kasa/Bank",
-          "Rozliczenia i księgowość": "Comarch ERP XT – Księga Podatkowa",
-          "CRM": "Comarch ERP XT – CRM",
-          "Sprzedaż online": "Comarch e-Sklep",
-          "Archiwizacja dokumentów": "Comarch e-Archiwum",
-        }
-      },
-      micro: {
-        production: {
-          "Produkcja": "Comarch ERP Optima – Produkcja",
-          "Magazyn": "Comarch ERP Optima – Handel",
-          "Marże": "Comarch BI Start",
-        },
-        services: {
-          "Zlecenia i CRM": "Comarch ERP Optima – CRM",
-          "Fakturowanie": "Comarch ERP Optima – Faktury",
-          "Analiza usług": "Comarch BI Start",
-        },
-        logistics: {
-          "Magazyn": "Comarch ERP Optima – Handel",
-          "Integracja z kurierami": "Comarch Shipping",
-          "CRM": "Comarch ERP Optima – CRM",
-        }
-      },
       sme: {
-        production: {
-          "APS": "Comarch APS",
-          "MES": "Comarch MES",
-          "Magazyn": "Comarch WMS",
-          "BI": "Comarch BI",
-          "Obieg dokumentów": "Comarch DMS",
-        },
         services: {
-          "Projekty": "Comarch ERP XL – Projekty",
-          "CRM": "Comarch ERP XL – CRM",
-          "Analizy": "Comarch BI",
-        },
-        logistics: {
-          "WMS": "Comarch WMS",
-          "Kurierzy": "Comarch Shipping",
-          "BI": "Comarch BI",
-        }
-      },
-      large: {
-        production: {
-          "APS": "Comarch APS",
-          "MES": "Comarch MES",
-          "Enterprise": "Comarch ERP Enterprise",
-          "BI": "Comarch BI",
-        },
-        services: {
-          "Projekty": "Comarch ERP Enterprise – Projekty",
-          "CRM": "Comarch ERP Enterprise – CRM",
-          "BI": "Comarch BI",
-        },
-        logistics: {
-          "WMS": "Comarch WMS",
-          "Kurierzy": "Comarch Shipping",
-          "BI": "Comarch BI",
+          "Comarch DMS": [0, 5],
+          "Comarch ERP XL – Projekty": [1],
+          "Comarch BI": [2, 7, 9],
+          "Comarch CRM": [3],
+          "Comarch TNA / Kadry i Płace": [4],
+          "Comarch ERP XL – Finanse": [6],
+          "Comarch ERP XL – Integracja oddziałów": [8]
         }
       }
     };
 
     const sizeSelect = document.getElementById('size');
     const sectorSelect = document.getElementById('sector');
-    const step1 = document.getElementById('step1');
-    const step2 = document.getElementById('step2');
     const toStep2Btn = document.getElementById('toStep2');
+    const toStep3Btn = document.getElementById('toStep3');
     const showBtn = document.getElementById('showRecommendations');
     const resultsDiv = document.getElementById('results');
+    const step1 = document.getElementById('step1');
+    const step2 = document.getElementById('step2');
+    const step3 = document.getElementById('step3');
+    const dynamicQuestions = document.getElementById('dynamicQuestions');
 
     sizeSelect.addEventListener('change', () => {
       toStep2Btn.disabled = !sizeSelect.value;
@@ -122,33 +93,55 @@
 
     toStep2Btn.addEventListener('click', () => {
       step1.classList.add('hidden');
-      if (sizeSelect.value === 'jdg') {
-        showRecommendations('jdg', 'any');
-      } else {
-        step2.classList.remove('hidden');
-      }
+      step2.classList.remove('hidden');
     });
 
     sectorSelect.addEventListener('change', () => {
-      showBtn.disabled = !sectorSelect.value;
+      toStep3Btn.disabled = !sectorSelect.value;
+    });
+
+    toStep3Btn.addEventListener('click', () => {
+      step2.classList.add('hidden');
+      step3.classList.remove('hidden');
+      dynamicQuestions.innerHTML = '';
+      questions.forEach((text, index) => {
+        const q = document.createElement('div');
+        q.innerHTML = `
+          <label>${index + 1}. ${text}</label>
+          <select data-index="${index}">
+            <option value="">-- wybierz --</option>
+            <option value="yes">Tak</option>
+            <option value="no">Nie</option>
+          </select>
+        `;
+        dynamicQuestions.appendChild(q);
+      });
     });
 
     showBtn.addEventListener('click', () => {
-      showRecommendations(sizeSelect.value, sectorSelect.value);
-    });
-
-    function showRecommendations(size, sector) {
       resultsDiv.innerHTML = '';
-      const recs = recommendations[size]?.[sector];
-      if (!recs) return;
-      for (const [area, tool] of Object.entries(recs)) {
-        const card = document.createElement('div');
-        card.className = 'recommendation';
-        card.innerHTML = `<strong>${area}</strong><br/>${tool}`;
-        resultsDiv.appendChild(card);
+      const size = sizeSelect.value;
+      const sector = sectorSelect.value;
+      if (size === 'sme' && sector === 'services') {
+        const answers = Array.from(dynamicQuestions.querySelectorAll('select')).map(s => s.value);
+        const used = new Set();
+        const sectorRecs = recommendations[size][sector];
+        for (const [tool, indices] of Object.entries(sectorRecs)) {
+          if (indices.some(i => answers[i] === 'no')) {
+            const card = document.createElement('div');
+            card.className = 'recommendation';
+            card.innerHTML = `<strong>${tool}</strong><br/>Polecane na podstawie Twoich odpowiedzi.`;
+            resultsDiv.appendChild(card);
+            used.add(tool);
+          }
+        }
+        if (used.size === 0) {
+          resultsDiv.innerHTML = '<p>Nie wykryto obszarów wymagających cyfryzacji na podstawie odpowiedzi.</p>';
+        }
       }
-    }
+    });
   </script>
 </body>
 </html>
+
 

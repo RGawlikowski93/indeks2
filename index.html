@@ -1,11 +1,141 @@
 <!DOCTYPE html>
 <html lang="pl">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Indeks Cyfryzacji</title>
-  </head>
-  <body>
-    <h1>Działa!</h1>
-    <p>Twoja strona jest poprawnie opublikowana 🚀</p>
-  </body>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Indeks Dojrzałości Cyfrowej</title>
+  <style>
+    body { font-family: sans-serif; max-width: 800px; margin: 2rem auto; padding: 1rem; }
+    .question { margin-bottom: 1.5rem; }
+    .recommendation { border: 1px solid #ccc; padding: 1rem; margin-top: 1rem; border-radius: 8px; }
+    h1 { font-size: 1.5rem; }
+  </style>
+</head>
+<body>
+  <h1>Indeks Dojrzałości Cyfrowej</h1>
+
+  <div class="question">
+    <label><strong>Jakiej wielkości jest Twoja firma?</strong></label><br />
+    <select id="size">
+      <option value="">-- wybierz --</option>
+      <option value="jdg">JDG</option>
+      <option value="micro">Mikroprzedsiębiorstwo</option>
+      <option value="sme">Średnia firma</option>
+      <option value="large">Duża firma</option>
+    </select>
+  </div>
+
+  <div class="question" id="sector-question" style="display:none;">
+    <label><strong>W jakim obszarze działa Twoja firma?</strong></label><br />
+    <select id="sector">
+      <option value="">-- wybierz --</option>
+      <option value="production">Produkcyjna</option>
+      <option value="services">Usługowa</option>
+      <option value="logistics">Logistyczna</option>
+    </select>
+  </div>
+
+  <div id="results"></div>
+
+  <script>
+    const recommendations = {
+      jdg: {
+        any: {
+          "Fakturowanie i płatności": "Comarch ERP XT – Faktury, Kasa/Bank",
+          "Rozliczenia i księgowość": "Comarch ERP XT – Księga Podatkowa",
+          "CRM": "Comarch ERP XT – CRM",
+          "Sprzedaż online": "Comarch e-Sklep",
+          "Archiwizacja dokumentów": "Comarch e-Archiwum",
+        }
+      },
+      micro: {
+        production: {
+          "Produkcja": "Comarch ERP Optima – Produkcja",
+          "Magazyn": "Comarch ERP Optima – Handel",
+          "Marże": "Comarch BI Start",
+        },
+        services: {
+          "Zlecenia i CRM": "Comarch ERP Optima – CRM",
+          "Fakturowanie": "Comarch ERP Optima – Faktury",
+          "Analiza usług": "Comarch BI Start",
+        },
+        logistics: {
+          "Magazyn": "Comarch ERP Optima – Handel",
+          "Integracja z kurierami": "Comarch Shipping",
+          "CRM": "Comarch ERP Optima – CRM",
+        }
+      },
+      sme: {
+        production: {
+          "APS": "Comarch APS",
+          "MES": "Comarch MES",
+          "Magazyn": "Comarch WMS",
+          "BI": "Comarch BI",
+          "Obieg dokumentów": "Comarch DMS",
+        },
+        services: {
+          "Projekty": "Comarch ERP XL – Projekty",
+          "CRM": "Comarch ERP XL – CRM",
+          "Analizy": "Comarch BI",
+        },
+        logistics: {
+          "WMS": "Comarch WMS",
+          "Kurierzy": "Comarch Shipping",
+          "BI": "Comarch BI",
+        }
+      },
+      large: {
+        production: {
+          "APS": "Comarch APS",
+          "MES": "Comarch MES",
+          "Enterprise": "Comarch ERP Enterprise",
+          "BI": "Comarch BI",
+        },
+        services: {
+          "Projekty": "Comarch ERP Enterprise – Projekty",
+          "CRM": "Comarch ERP Enterprise – CRM",
+          "BI": "Comarch BI",
+        },
+        logistics: {
+          "WMS": "Comarch WMS",
+          "Kurierzy": "Comarch Shipping",
+          "BI": "Comarch BI",
+        }
+      }
+    };
+
+    const sizeSelect = document.getElementById('size');
+    const sectorSelect = document.getElementById('sector');
+    const sectorQuestion = document.getElementById('sector-question');
+    const resultsDiv = document.getElementById('results');
+
+    sizeSelect.addEventListener('change', () => {
+      resultsDiv.innerHTML = '';
+      if (sizeSelect.value === 'jdg') {
+        sectorQuestion.style.display = 'none';
+        showRecommendations('jdg', 'any');
+      } else {
+        sectorQuestion.style.display = 'block';
+      }
+    });
+
+    sectorSelect.addEventListener('change', () => {
+      resultsDiv.innerHTML = '';
+      if (sizeSelect.value && sectorSelect.value) {
+        showRecommendations(sizeSelect.value, sectorSelect.value);
+      }
+    });
+
+    function showRecommendations(size, sector) {
+      const recs = recommendations[size]?.[sector];
+      if (!recs) return;
+      for (const [area, tool] of Object.entries(recs)) {
+        const card = document.createElement('div');
+        card.className = 'recommendation';
+        card.innerHTML = `<strong>${area}</strong><br/>${tool}`;
+        resultsDiv.appendChild(card);
+      }
+    }
+  </script>
+</body>
 </html>
